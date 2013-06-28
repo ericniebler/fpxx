@@ -46,7 +46,7 @@ using expr_f_ =
 
 template<typename A>
 struct expr_f
-  : expr_f_<A>, fp::functor_instance
+  : expr_f_<A>
 {
     using functor_type = expr_functor<A>;
     expr_f(_const_ c) : expr_f_<A>(c) {}

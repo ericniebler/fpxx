@@ -38,9 +38,6 @@ namespace fp
       : mpl::bool_<std::is_base_of<empty, monad_type<T>>::value>
     {};
 
-    struct monad_instance
-    {};
-
     template<typename Monad>
     struct monad
     {
@@ -48,12 +45,20 @@ namespace fp
 
         // return :: Monad M => a -> M a
 
-        // (>>) :: Monad M => M a -> M b -> M b
-        // M a >> M b = M a >>= \_ -> M b
-        template<typename M_a, typename M_b, typename M = Monad>
-        static auto seq(M_a const &m_a, M_b const &m_b)
-            RETURN(M::bind(m_a, always(m_b)))
+        struct seq_type
+        {
+            // (>>) :: Monad M => M a -> M b -> M b
+            // M a >> M b = M a >>= \_ -> M b
+            template<typename M_a, typename M_b, typename M = Monad>
+            auto operator ()(M_a const &m_a, M_b const &m_b) const
+                RETURN(M::bind(m_a, always(m_b)))
+        };
+
+        static constexpr seq_type const &seq = static_const<seq_type>::value;
     };
+
+    template<typename Monad>
+    constexpr typename monad<Monad>::seq_type const &monad<Monad>::seq;
 
     // (>>=) :: Monad M => M a -> (a -> M b) -> M b
     template<typename M, typename F>
@@ -70,21 +75,28 @@ namespace fp
     auto operator >>(M_a const &m_a, M_b const &m_b)
         RETURN(monad_type<M_a>::type::seq(m_a, m_b))
 
-    struct bind
+    struct bind_type
     {
         template<typename M, typename F>
         auto operator ()(M const &m, F const &f) const
             RETURN(monad_type<M>::type::bind(m, f))
     };
 
-    template<typename M>
-    struct return_
+    struct seq_type
     {
-        // return :: Monad M => a -> M a
-        template<typename Val>
-        auto operator ()(Val const &val) const
-            RETURN(M::return_(val))
+        template<typename M_a, typename M_b
+          , ENABLE_IF(std::is_same<
+                typename monad_type<M_a>::type
+              , typename monad_type<M_b>::type
+            >::value)
+        >
+        auto operator ()(M_a const &m_a, M_b const &m_b) const
+            RETURN(monad_type<M_a>::type::seq(m_a, m_b))
     };
+
+    constexpr bind_type const &bind = static_const<bind_type>::value;
+
+    constexpr seq_type const &seq = static_const<seq_type>::value;
 }
 
 #endif

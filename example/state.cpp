@@ -24,7 +24,7 @@ int main()
         S::return_(s*s);
     };
 
-    std::cout << eval_state()(inc3sq, 0) << std::endl;
+    std::cout << eval_state(inc3sq, 0) << std::endl;
 
     auto postincrement =
         get      >>= [](int x){return
@@ -39,9 +39,9 @@ int main()
     // fp::state is also a functor:
     auto x = S::return_(42);
     auto fun = [](int x){return "hello";};
-    auto y = fp::fmap()(fun, x);
+    auto y = fp::fmap(fun, x);
 
-    std::cout << fp::eval_state()(y, 36) << std::endl;
+    std::cout << fp::eval_state(y, 36) << std::endl;
 
     void done();
     done();

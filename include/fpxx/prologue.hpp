@@ -25,6 +25,15 @@ namespace fp
         using other = T<A, B...>;
     };
 
+    template<typename T>
+    struct static_const
+    {
+        static constexpr T value {};
+    };
+
+    template<typename T>
+    constexpr T static_const<T>::value;
+
     struct make_pair
     {
         template<typename First, typename Second>
@@ -48,10 +57,18 @@ namespace fp
         }
     };
 
-    template<typename T>
-    constexpr always_<T> always(T const &val)
+    struct always_type
     {
-        return always_<T>(val);
+        template<typename T>
+        constexpr always_<T> operator ()(T const &val) const
+        {
+            return always_<T>(val);
+        }
+    };
+
+    namespace
+    {
+        constexpr always_type const &always = static_const<always_type>::value;
     }
 
     template<typename Fun>
@@ -68,10 +85,18 @@ namespace fp
             RETURN(fun(std::get<0>(p), std::get<1>(p)))
     };
 
-    template<typename Fun>
-    constexpr uncurry_<Fun> uncurry(Fun const &f)
+    struct uncurry_type
     {
-        return uncurry_<Fun>{f};
+        template<typename Fun>
+        constexpr uncurry_<Fun> operator ()(Fun const &f) const
+        {
+            return uncurry_<Fun>{f};
+        }
+    };
+
+    namespace
+    {
+        constexpr uncurry_type const &uncurry = static_const<uncurry_type>::value;
     }
 
     template<typename F0, typename F1>
@@ -89,10 +114,18 @@ namespace fp
             RETURN(fun0(fun1(t)))
     };
 
-    template<typename F0, typename F1>
-    constexpr compose_<F0, F1> compose(F0 const &f0, F1 const &f1)
+    struct compose_type
     {
-        return compose_<F0, F1>(f0, f1);
+        template<typename F0, typename F1>
+        constexpr compose_<F0, F1> operator ()(F0 const &f0, F1 const &f1) const
+        {
+            return compose_<F0, F1>(f0, f1);
+        }
+    };
+
+    namespace
+    {
+        constexpr compose_type const &compose = static_const<compose_type>::value;
     }
 
     struct void_ 
@@ -103,15 +136,6 @@ namespace fp
             return sout << "()";
         }
     };
-
-    template<typename T>
-    struct static_const
-    {
-        static constexpr T value {};
-    };
-
-    template<typename T>
-    constexpr T static_const<T>::value;
 }
 
 #endif

@@ -18,6 +18,11 @@ namespace boost { namespace mpl {} }
 
 namespace fp
 {
+    namespace detail
+    {
+        struct no_instance_found {};
+    }
+
     namespace mpl = boost::mpl;
 
     struct make_pair;
@@ -25,20 +30,17 @@ namespace fp
     template<typename T>
     struct always_;
 
-    template<typename T>
-    constexpr always_<T> always(T const &val);
+    struct always_type;
 
     template<typename Fun>
     struct uncurry_;
 
-    template<typename Fun>
-    constexpr uncurry_<Fun> uncurry(Fun const &f);
+    struct uncurry_type;
 
     template<typename F0, typename F1>
     struct compose_;
 
-    template<typename F0, typename F1>
-    constexpr compose_<F0, F1> compose(F0 const &f0, F1 const &f1);
+    struct compose_type;
 
     struct void_;
 
@@ -53,12 +55,10 @@ namespace fp
     template<typename T>
     struct is_functor_instance;
 
-    struct functor_instance;
-
     template<typename Functor>
     struct functor;
 
-    struct fmap;
+    struct fmap_type;
 
     template<typename Fun, typename Functor>
     struct variant_functor_visitor;
@@ -75,23 +75,20 @@ namespace fp
     template<typename T>
     struct monad_type;
 
-    struct monad_instance;
-
     template<typename Monad>
     struct monad;
 
-    struct bind;
+    struct bind_type;
 
     template<typename M>
-    struct return_;
+    struct return_type;
 
     struct state_monad;
 
     template<typename RunState>
     struct state_;
 
-    template<typename RunState>
-    constexpr state_<RunState> state(RunState const &fun);
+    struct state_type;
 
     struct run_state;
 
@@ -102,32 +99,23 @@ namespace fp
     template<typename T>
     struct put_;
 
-    template<typename T>
-    constexpr state_<put_<T>> put(T const &t);
+    struct put_type;
 
-    struct eval_state;
+    struct eval_state_type;
 
-    struct exec_state;
+    struct exec_state_type;
 
     template<template<typename> class F>
     struct fix;
 
-    template<template<typename> class F>
-    constexpr fix<F> fx(F<fix<F>> f);
+    struct fx_type;
 
-    template<template<typename> class F,
-             template<typename, typename...> class Fprime,
-             typename ...A>
-    constexpr fix<F> fx(Fprime<fix<F>, A...> f);
-
-    template<template<typename> class F>
-    F<fix<F>> const &unfix(fix<F> const &f);
+    struct unfix_type;
 
     template<typename Alg>
     struct cata_;
 
-    template<typename Alg>
-    constexpr cata_<Alg> cata(Alg const &alg);
+    struct cata_type;
 }
 
 #endif

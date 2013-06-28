@@ -40,16 +40,13 @@ namespace fp
       : mpl::bool_<std::is_base_of<empty, functor_type<T>>::value>
     {};
 
-    struct functor_instance
-    {};
-
     template<typename Functor>
     struct functor
     {
         // fmap :: Functor F => (a -> b) -> F a -> F b
     };
 
-    struct fmap
+    struct fmap_type
     {
         // fmap :: Functor F => (a -> b) -> F a -> F b
         template<typename F, typename F_a>
@@ -57,31 +54,52 @@ namespace fp
             RETURN(functor_type<F_a>::type::fmap(f, f_a))
     };
 
+    namespace
+    {
+        constexpr fmap_type const &fmap = static_const<fmap_type>::value;
+    }
+
     template<typename Fun, typename Functor>
     struct variant_functor_visitor;
 
     template<typename Functor>
     struct variant_functor : functor<Functor>
     {
-        // fmap :: Functor f => (a -> b) -> f a -> f b
-        // (Assumes F_a is a boost::variant.)
-        template<typename Fun, typename F_a>
-        static typename variant_functor_visitor<Fun, Functor>::result_type
-        fmap(Fun const &f, F_a const &f_a)
+        struct fmap_type
         {
-            return boost::apply_visitor(variant_functor_visitor<Fun, Functor>{f}, f_a);
-        }
+            // fmap :: Functor f => (a -> b) -> f a -> f b
+            // (Assumes F_a is a boost::variant.)
+            template<typename Fun, typename F_a>
+            typename variant_functor_visitor<Fun, Functor>::result_type
+            operator ()(Fun const &f, F_a const &f_a) const
+            {
+                return boost::apply_visitor(variant_functor_visitor<Fun, Functor>{f}, f_a);
+            }
+        };
+
+        static constexpr fmap_type const &fmap = static_const<fmap_type>::value;
     };
+
+    template<typename Functor>
+    constexpr typename variant_functor<Functor>::fmap_type const &variant_functor<Functor>::fmap;
 
     // Define a functor in terms of the monad operations.
     template<typename Functor>
     struct monad_functor : functor<Functor>
     {
-        // fmap f xs  ==  xs >>= return . f
-        template<typename Fun, typename M_a, typename M = typename monad_type<M_a>::type>
-        static auto fmap(Fun const &f, M_a const &m_a)
-            RETURN(m_a >>= compose(return_<M>(), f))
+        struct fmap_type
+        {
+            // fmap f xs  ==  xs >>= return . f
+            template<typename Fun, typename M_a, typename M = typename monad_type<M_a>::type>
+            auto operator ()(Fun const &f, M_a const &m_a) const
+                RETURN(m_a >>= compose(M::return_, f))
+        };
+
+        static constexpr fmap_type const &fmap = static_const<fmap_type>::value;
     };
+
+    template<typename Functor>
+    constexpr typename monad_functor<Functor>::fmap_type const &monad_functor<Functor>::fmap;
 }
 
 #endif
