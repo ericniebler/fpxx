@@ -10,6 +10,8 @@
 #define FPXX_FIX_HPP_INCLUDED
 
 #include <type_traits>
+#include <functional>
+#include "fpxx/prologue.hpp"
 #include "fpxx/functor.hpp"
 
 namespace fp
@@ -69,30 +71,23 @@ namespace fp
         constexpr unfix_type const &unfix = static_const<unfix_type>::value;
     }
 
-    // cata :: Functor f => (f a -> a) -> fix f -> a
-    // cata alg = alg . fmap (cata alg) . unfix
-    template<typename Alg>
-    struct cata_
+    namespace detail
     {
-        Alg alg_;
-
-        constexpr explicit cata_(Alg const &alg)
-          : alg_(alg)
-        {}
-
         template<template<typename> class F>
-        typename Alg::result_type operator ()(fix<F> o) const
+        struct any_f
         {
-            return this->alg_(fp::fmap(*this, fp::unfix(o)));
-        }
-    };
+            template<typename T>
+            operator F<T> &() const;
+        };
+    }
 
     struct cata_type
     {
-        template<typename Alg>
-        constexpr cata_<Alg> operator ()(Alg const &alg) const
+        template<typename Alg, template<typename> class F>
+        typename std::result_of<Alg(detail::any_f<F>)>::type
+        operator ()(Alg const &alg, fix<F> const &o) const
         {
-            return cata_<Alg>{alg};
+            return (alg)(fp::fmap(std::bind(*this, alg, _1), fp::unfix(o)));
         }
     };
 

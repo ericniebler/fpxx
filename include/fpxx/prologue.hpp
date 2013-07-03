@@ -11,10 +11,14 @@
 
 #include <iosfwd>
 #include <utility>
+#include <functional>
 #include "fpxx/fpxx_fwd.hpp"
 
 namespace fp
 {
+    using std::placeholders::_1;
+    using std::placeholders::_2;
+
     struct empty
     {};
 

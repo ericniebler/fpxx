@@ -18,9 +18,6 @@
 
 namespace fp
 {
-    using std::placeholders::_1;
-    using std::placeholders::_2;
-
     struct state_monad;
 
     struct state_functor;
@@ -28,9 +25,6 @@ namespace fp
     template<typename RunState>
     struct state_
     {
-        using monad_type = state_monad;
-        using functor_type = state_functor;
-
         RunState run_state;
 
         explicit constexpr state_(RunState const &fun = RunState())
@@ -89,11 +83,22 @@ namespace fp
     };
 
     constexpr state_monad::bind_type const &state_monad::bind;
-
     constexpr state_monad::return_type const &state_monad::return_;
 
     struct state_functor : monad_functor<state_functor>
     {};
+
+    template<typename RunState>
+    struct monad_type<state_<RunState>>
+    {
+        using type = state_monad;
+    };
+
+    template<typename RunState>
+    struct functor_type<state_<RunState>>
+    {
+        using type = state_functor;
+    };
 
     struct get_
     {

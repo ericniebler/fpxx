@@ -140,7 +140,7 @@ struct alg : std::unary_function<expr_f<int>, int>
 // eval = cata alg
 int eval(expr e)
 {
-    return fp::cata(alg{})(e);
+    return fp::cata(alg{}, e);
 }
 
 int main()
